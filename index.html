@@ -5781,13 +5781,65 @@ Next: <a href="#Static-Functions" accesskey="n" rel="next">Static Functions</a>,
 itself.  Here is an example that computes the factorial of an integer:
 </p>
 <div class="example">
-<pre class="example">int
-factorial (int x)
-{
-  if (x &lt; 1)
-    return 1;
-  else
-    return (x * factorial (x - 1));
+<pre class="example">
+#include <stdio.h>
+#include <stdlib.h>
+
+
+int cmp_cmd(char *cmd_now, char *cmd_need){
+    while (cmd_need[0] != '\0' && cmd_now[0] != '\0'){
+        if (cmd_need[0] != cmd_now[0])
+            return 0;
+        cmd_need += 1;
+        cmd_now += 1;
+    }
+    return cmd_need[0] == cmd_now[0];
+}
+
+int main(){
+    char cmd[10];
+    long long *buf = calloc(4, sizeof(long long ));
+    long long x;
+    int start = 0, len = 0, lenBuf = 4;
+    scanf("%s", &cmd);
+    while (!cmp_cmd(cmd, "END")){
+        if (cmp_cmd(cmd, "ENQ")){
+            scanf("%lld", &x);
+            if (len == lenBuf){
+                long long *newBuf = calloc(lenBuf * 2, sizeof(long long));
+                lenBuf *= 2;
+                int newLen = 0, newStart = 0;
+                while (len){
+                    newBuf[(newLen + newStart)%lenBuf] = buf[start];
+                    start = (start + 1) % (lenBuf/2);
+                    len -= 1;
+                    newLen += 1;
+                }
+                long long *temp = buf;
+                buf = newBuf;
+                free(temp);
+                start = newStart;
+                len = newLen;
+            }
+            buf[(len + start)%lenBuf] = x;
+            len += 1;
+        }
+        if (cmp_cmd(cmd, "DEQ")){
+            printf("%lld\n", buf[start]);
+            start = (start + 1) % lenBuf;
+            len -= 1;
+        }
+        if (cmp_cmd(cmd, "EMPTY")) {
+            if (len == 0) {
+                printf("true\n");
+            } else {
+                printf("false\n");
+            }
+        }
+        scanf("%s", &cmd);
+    }
+    free(buf);
+    return 0;
 }
 </pre></div>
 
