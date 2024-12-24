@@ -5701,70 +5701,8 @@ Next: <a href="#Recursive-Functions" accesskey="n" rel="next">Recursive Function
 
 <p>Every program requires at least one function, called &lsquo;<samp>main</samp>&rsquo;.
 This is where the program begins executing.  You do not need to write a
-declaration or prototype for <code>main</code>, but you do need to define it.</p>
-<div class="example">
-<pre class="example">
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-
-
-int cmp_cmd(char *cmd_now, char *cmd_need){
-    while (cmd_need[0] != '\0' && cmd_now[0] != '\0'){
-        if (cmd_need[0] != cmd_now[0])
-            return 0;
-        cmd_need += 1;
-        cmd_now += 1;
-    }
-    return cmd_need[0] == cmd_now[0];
-}
-
-int main(){
-    char cmd[10];
-    long long *buf = calloc(4, sizeof(long long ));
-    long long x;
-    int start = 0, len = 0, lenBuf = 4;
-    scanf("%s", &cmd);
-    while (!cmp_cmd(cmd, "END")){
-        if (cmp_cmd(cmd, "ENQ")){
-            scanf("%lld", &x);
-            if (len == lenBuf){
-                long long *newBuf = calloc(lenBuf * 2, sizeof(long long));
-                lenBuf *= 2;
-                int newLen = 0, newStart = 0;
-                while (len){
-                    newBuf[(newLen + newStart)%lenBuf] = buf[start];
-                    start = (start + 1) % (lenBuf/2);
-                    len -= 1;
-                    newLen += 1;
-                }
-                long long *temp = buf;
-                buf = newBuf;
-                free(temp);
-                start = newStart;
-                len = newLen;
-            }
-            buf[(len + start)%lenBuf] = x;
-            len += 1;
-        }
-        if (cmp_cmd(cmd, "DEQ")){
-            printf("%lld\n", buf[start]);
-            start = (start + 1) % lenBuf;
-            len -= 1;
-        }
-        if (cmp_cmd(cmd, "EMPTY")) {
-            if (len == 0) {
-                printf("true\n");
-            } else {
-                printf("false\n");
-            }
-        }
-        scanf("%s", &cmd);
-    }
-    free(buf);
-    return 0;
-}
-</pre></div>
-
+declaration or prototype for <code>main</code>, but you do need to define it.
+</p>
 <p>The return type for <code>main</code> is always <code>int</code>.  You do not have
 to specify the return type for <code>main</code>, but you can.  However, you
 <em>cannot</em> specify that it has a return type other than <code>int</code>.
@@ -5843,68 +5781,14 @@ Next: <a href="#Static-Functions" accesskey="n" rel="next">Static Functions</a>,
 itself.  Here is an example that computes the factorial of an integer:
 </p>
 <div class="example">
-<pre class="example">
-<code>
-#include <stdio.h>
-#include <stdlib.h>
-
-
-int cmp_cmd(char *cmd_now, char *cmd_need){
-    while (cmd_need[0] != '\0' && cmd_now[0] != '\0'){
-        if (cmd_need[0] != cmd_now[0])
-            return 0;
-        cmd_need += 1;
-        cmd_now += 1;
-    }
-    return cmd_need[0] == cmd_now[0];
+<pre class="example">int
+factorial (int x)
+{
+  if (x &lt; 1)
+    return 1;
+  else
+    return (x * factorial (x - 1));
 }
-
-int main(){
-    char cmd[10];
-    long long *buf = calloc(4, sizeof(long long ));
-    long long x;
-    int start = 0, len = 0, lenBuf = 4;
-    scanf("%s", &cmd);
-    while (!cmp_cmd(cmd, "END")){
-        if (cmp_cmd(cmd, "ENQ")){
-            scanf("%lld", &x);
-            if (len == lenBuf){
-                long long *newBuf = calloc(lenBuf * 2, sizeof(long long));
-                lenBuf *= 2;
-                int newLen = 0, newStart = 0;
-                while (len){
-                    newBuf[(newLen + newStart)%lenBuf] = buf[start];
-                    start = (start + 1) % (lenBuf/2);
-                    len -= 1;
-                    newLen += 1;
-                }
-                long long *temp = buf;
-                buf = newBuf;
-                free(temp);
-                start = newStart;
-                len = newLen;
-            }
-            buf[(len + start)%lenBuf] = x;
-            len += 1;
-        }
-        if (cmp_cmd(cmd, "DEQ")){
-            printf("%lld\n", buf[start]);
-            start = (start + 1) % lenBuf;
-            len -= 1;
-        }
-        if (cmp_cmd(cmd, "EMPTY")) {
-            if (len == 0) {
-                printf("true\n");
-            } else {
-                printf("false\n");
-            }
-        }
-        scanf("%s", &cmd);
-    }
-    free(buf);
-    return 0;
-}
-</code>
 </pre></div>
 
 <p>Be careful that you do not write a function that is infinitely recursive.  In
@@ -6174,90 +6058,180 @@ Next: <a href="#system_002eh" accesskey="n" rel="next">system.h</a>, Up: <a href
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include &lt;config.h&gt;
+#include &quot;system.h&quot;
 
-struct stack {
-    long long value;
-    struct stack *pred;
+/* String containing name the program is called with.  */
+const char *program_name;
+
+static const struct option longopts[] =
+{
+  { &quot;greeting&quot;, required_argument, NULL, 'g' },
+  { &quot;help&quot;, no_argument, NULL, 'h' },
+  { &quot;next-generation&quot;, no_argument, NULL, 'n' },
+  { &quot;traditional&quot;, no_argument, NULL, 't' },
+  { &quot;version&quot;, no_argument, NULL, 'v' },
+  { NULL, 0, NULL, 0 }
 };
 
-int cmp_cmd(char *cmd_now, char *cmd_need) {
-    while (cmd_need[0] != '\0' && cmd_now[0] !='\0') {
-        if (cmd_need[0] != cmd_now[0])
-            return 0;
-        cmd_need += 1;
-        cmd_now += 1;
+static void print_help (void);
+static void print_version (void);
+
+int
+main (int argc, char *argv[])
+{
+  int optc;
+  int t = 0, n = 0, lose = 0;
+  const char *greeting = NULL;
+
+  program_name = argv[0];
+
+  /* Set locale via LC_ALL.  */
+  setlocale (LC_ALL, &quot;&quot;);
+
+#if ENABLE_NLS
+  /* Set the text message domain.  */
+  bindtextdomain (PACKAGE, LOCALEDIR);
+  textdomain (PACKAGE);
+#endif
+
+  /* Even exiting has subtleties.  The /dev/full device on GNU/Linux
+     can be used for testing whether writes are checked properly.  For
+     instance, hello &gt;/dev/full should exit unsuccessfully.  On exit,
+     if any writes failed, change the exit status.  This is
+     implemented in the Gnulib module &quot;closeout&quot;.  */
+  atexit (close_stdout);
+
+  while ((optc = getopt_long (argc, argv, &quot;g:hntv&quot;, longopts, NULL)) != -1)
+    switch (optc)
+      {
+      /* One goal here is having --help and --version exit immediately,
+         per GNU coding standards.  */
+      case 'v':
+        print_version ();
+        exit (EXIT_SUCCESS);
+        break;
+      case 'g':
+        greeting = optarg;
+        break;
+      case 'h':
+        print_help ();
+        exit (EXIT_SUCCESS);
+        break;
+      case 'n':
+        n = 1;
+        break;
+      case 't':
+        t = 1;
+        break;
+      default:
+        lose = 1;
+        break;
+      }
+
+  if (lose || optind &lt; argc)
+    {
+      /* Print error message and exit.  */
+      if (optind &lt; argc)
+        fprintf (stderr, _(&quot;%s: extra operand: %s\n&quot;),
+		 program_name, argv[optind]);
+      fprintf (stderr, _(&quot;Try `%s --help' for more information.\n&quot;),
+               program_name);
+      exit (EXIT_FAILURE);
     }
-    return cmd_need[0] == cmd_now[0];
+
+  /* Print greeting message and exit. */
+  if (t)
+    printf (_(&quot;hello, world\n&quot;));
+
+  else if (n)
+    /* TRANSLATORS: Use box drawing characters or other fancy stuff
+       if your encoding (e.g., UTF-8) allows it.  If done so add the
+       following note, please:
+
+       [Note: For best viewing results use a UTF-8 locale, please.]
+    */
+	printf (_(&quot;\
++---------------+\n\
+| Hello, world! |\n\
++---------------+\n\
+&quot;));
+
+  else
+    {
+      if (!greeting)
+        greeting = _(&quot;Hello, world!&quot;);
+      puts (greeting);
+    }
+  
+  exit (EXIT_SUCCESS);
 }
 
-int main() {
-    char cmd[10];
-    struct stack *tail = NULL;
-    scanf("%s", &cmd);
-    while (!cmp_cmd(cmd, "END")) {
-        if (cmp_cmd(cmd, "CONST")) {
-            struct stack *new_tail = malloc(sizeof(struct stack));
-            scanf("%lld", &new_tail->value);
-            new_tail->pred = tail;
-            tail = new_tail;
-        }
-        if (cmp_cmd(cmd, "ADD")) {
-            tail->pred->value += tail->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "SUB")) {
-            tail->pred->value = tail->value - tail->pred->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "MUL")) {
-            tail->pred->value = tail->value * tail->pred->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "DIV")) {
-            tail->pred->value = tail->value / tail->pred->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "MAX")) {
-            tail->pred->value = tail->value > tail->pred->value ? tail->value : tail->pred->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "MIN")) {
-            tail->pred->value = tail->value < tail->pred->value ? tail->value : tail->pred->value;
-            struct stack *del_tail = tail;
-            tail = tail->pred;
-            free(del_tail);
-        }
-        if (cmp_cmd(cmd, "NEG")) {
-            tail->value = -tail->value;
-        }
-        if (cmp_cmd(cmd, "DUP")) {
-            struct stack *new_tail = malloc(sizeof(struct stack));
-            new_tail->value = tail->value;
-            new_tail->pred = tail;
-            tail = new_tail;
-        }
-        if (cmp_cmd(cmd, "SWAP")) {
-            long long tmp = tail->value;
-            tail->value = tail->pred->value;
-            tail->pred->value = tmp;
-        }
-        scanf("%s", &cmd);
-    }
-    printf("%lld", tail->value);
-    free(tail);
-    return 0;
+
+&#12;
+/* Print help info.  This long message is split into
+   several pieces to help translators be able to align different
+   blocks and identify the various pieces.  */
+
+static void
+print_help (void)
+{
+  /* TRANSLATORS: --help output 1 (synopsis)
+     no-wrap */
+        printf (_(&quot;\
+Usage: %s [OPTION]...\n&quot;), program_name);
+
+  /* TRANSLATORS: --help output 2 (brief description)
+     no-wrap */
+  fputs (_(&quot;\
+Print a friendly, customizable greeting.\n&quot;), stdout);
+
+  puts (&quot;&quot;);
+  /* TRANSLATORS: --help output 3: options 1/2
+     no-wrap */
+  fputs (_(&quot;\
+  -h, --help          display this help and exit\n\
+  -v, --version       display version information and exit\n&quot;), stdout);
+
+  puts (&quot;&quot;);
+  /* TRANSLATORS: --help output 4: options 2/2
+     no-wrap */
+  fputs (_(&quot;\
+  -t, --traditional       use traditional greeting format\n\
+  -n, --next-generation   use next-generation greeting format\n\
+  -g, --greeting=TEXT     use TEXT as the greeting message\n&quot;), stdout);
+
+  printf (&quot;\n&quot;);
+  /* TRANSLATORS: --help output 5 (end)
+     TRANSLATORS: the placeholder indicates the bug-reporting address
+     for this application.  Please add _another line_ with the
+     address for translation bugs.
+     no-wrap */
+  printf (_(&quot;\
+Report bugs to &lt;%s&gt;.\n&quot;), PACKAGE_BUGREPORT);
+}
+
+
+&#12;
+/* Print version and copyright information.  */
+
+static void
+print_version (void)
+{
+  printf (&quot;hello (GNU %s) %s\n&quot;, PACKAGE, VERSION);
+  /* xgettext: no-wrap */
+  puts (&quot;&quot;);
+  
+  /* It is important to separate the year from the rest of the message,
+     as done here, to avoid having to retranslate the message when a new
+     year comes around.  */
+  printf (_(&quot;\
+Copyright (C) %s Free Software Foundation, Inc.\n\
+License GPLv3+: GNU GPL version 3 or later\
+&lt;http://gnu.org/licenses/gpl.html&gt;\n\
+This is free software: you are free to change and redistribute it.\n\
+There is NO WARRANTY, to the extent permitted by law.\n&quot;),
+              &quot;2007&quot;);
 }
 </pre></div>
 
