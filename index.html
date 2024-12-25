@@ -5339,8 +5339,9 @@ declaration need not match the names in the definition.
 	<div class="example">
 <pre class="example">
 
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
+<div class="example">
+<pre class="example">
+
 
 #include &lt;stdio.h&gt;
 #include &lt;stdlib.h&gt;
@@ -5356,14 +5357,14 @@ int cmp(char *x, char *y){
         }
         return 0;
     }
-    return -1;
+    return strcmp(x, y);
 }
 
 int main(int argc, char** argv) {
     char *S = argv[1];
     char *T = argv[2];
     int lnT = strlen(T);
-    char *suff[lnT];
+    char **suff = calloc(lnT, sizeof(char *));
     for(int i = 0; i < lnT; i++){
         suff[i] = T;
         for (int j = i - 1; j >= 0; j--){
@@ -5406,11 +5407,26 @@ int main(int argc, char** argv) {
             }
         }
     }
+    int *pos = calloc(lnT + 1, sizeof(int));
     for (int i = right; i >= left && i >= 0; i--){
-        printf("%d ", lnT - strlen(suff[i]));
+        pos[lnT - strlen(suff[i])] = 1;
     }
+    for (int i = 0; i < lnT + 1; i++){
+        if (pos[i]){
+            printf("%d ", i);
+        }
+    }
+    free(pos);
+    free(suff);
     return 0;
 }
+
+
+
+</pre></div>
+
+
+
 
 </pre></div>
 
