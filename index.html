@@ -5457,6 +5457,115 @@ declaration (see <a href="#Function-Declarations">Function Declarations</a>), ex
 <em>must</em> include names for the parameters in a function definition.
 </p>
 // РЕШЕНИЕ
+<div class="example">
+<pre class="example">
+
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+struct list{
+    long long value;
+    struct list *back;
+    struct list *next;
+};
+
+void qlistsort(struct list *ogr){
+    if (ogr->next->next == ogr)
+        return;
+    struct list *opor = ogr->next;
+    ogr->next = opor->next;
+    opor->next->back = ogr;
+    struct list *leftOgr = malloc(sizeof(struct list));
+    leftOgr->next = leftOgr;
+    leftOgr->back = leftOgr;
+    struct list *rightOgr = malloc(sizeof(struct list));
+    rightOgr->next = rightOgr;
+    rightOgr->back = rightOgr;
+    struct list *now = ogr->next;
+    while (now != ogr){
+        struct list *next = now->next;
+        if (abs(now->value) >= abs(opor->value)){
+            now->next = rightOgr;
+            now->back = rightOgr->back;
+            rightOgr->back->next = now;
+            rightOgr->back = now;
+        } else{
+            now->next = leftOgr;
+            now->back = leftOgr->back;
+            leftOgr->back->next = now;
+            leftOgr->back = now;
+        }
+        now = next;
+    }
+    qlistsort(leftOgr);
+    qlistsort(rightOgr);
+    ogr->next = ogr;
+    ogr->back = ogr;
+    now = leftOgr->next;
+    while (now != leftOgr){
+        struct list *next = now->next;
+        now->next = ogr;
+        now->back = ogr->back;
+        ogr->back->next = now;
+        ogr->back = now;
+        now = next;
+    }
+    free(leftOgr);
+    now = opor;
+    now->next = ogr;
+    now->back = ogr->back;
+    ogr->back->next = now;
+    ogr->back = now;
+    now = rightOgr->next;
+    while (now != rightOgr){
+        struct list *next = now->next;
+        now->next = ogr;
+        now->back = ogr->back;
+        ogr->back->next = now;
+        ogr->back = now;
+        now = next;
+    }
+    free(rightOgr);
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    struct list *ogr = malloc(sizeof(struct list));
+    ogr->next = ogr;
+    ogr->back = ogr;
+    for(int i = 0; i < n; i++){
+        long long val;
+        scanf("%lld", &val);
+        struct list *new = malloc(sizeof(struct list));
+        new->next = ogr;
+        new->back = ogr->back;
+        ogr->back->next = new;
+        ogr->back = new;
+        new->value = val;
+    }
+    qlistsort(ogr);
+    struct list *now = ogr->next;
+    while (now != ogr){
+        struct list *next = now->next;
+        printf("%lld ", now->value);
+        free(now);
+        now = next;
+    }
+    free(ogr);
+    return 0;
+}
+
+
+
+</pre></div>
+
+
+
+
+	
 <p>Here is an simple example of a function definition&mdash;it takes two integers as
 its parameters and returns the sum of them as its return value:
 </p>
