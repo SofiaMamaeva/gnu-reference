@@ -5336,6 +5336,86 @@ once within a single declaration.  The parameter names in the
 declaration need not match the names in the definition.
 </p>
 // РЕШЕНИЕ
+	<div class="example">
+<pre class="example">
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+int cmp(char *x, char *y){
+    if (strlen(x) >= strlen(y)){
+        int ln = strlen(y);
+        for (int i = 0; i < ln; i++){
+            if (x[i] != y[i]){
+                return x[i] - y[i];
+            }
+        }
+        return 0;
+    }
+    return -1;
+}
+
+int main(int argc, char** argv) {
+    char *S = argv[1];
+    char *T = argv[2];
+    int lnT = strlen(T);
+    char *suff[lnT];
+    for(int i = 0; i < lnT; i++){
+        suff[i] = T;
+        for (int j = i - 1; j >= 0; j--){
+            if (strcmp(suff[j], suff[j + 1])>0) {
+                char *temp = suff[j + 1];
+                suff[j + 1] = suff[j];
+                suff[j] = temp;
+            } else{
+                break;
+            }
+        }
+        T += 1;
+    }
+    int L = 0, R = lnT;
+    int left = -1, right = -1;
+    while (R - L > 0) {
+        int mid = (L + R)/2;
+        if (cmp(suff[mid], S) > 0) {
+            R = mid;
+        }else {
+            if (cmp(suff[mid], S) == 0) {
+                left = mid;
+                R = mid;
+            } else {
+                L = mid + 1;
+            }
+        }
+    }
+    L = 0, R = lnT;
+    while (R - L > 0) {
+        int mid = (L + R)/2;
+        if (cmp(suff[mid], S) > 0) {
+            R = mid;
+        }else {
+            if (cmp(suff[mid], S) == 0) {
+                right = mid;
+                L = mid + 1;
+            } else {
+                L = mid + 1;
+            }
+        }
+    }
+    for (int i = right; i >= left && i >= 0; i--){
+        printf("%d ", lnT - strlen(suff[i]));
+    }
+    return 0;
+}
+
+</pre></div>
+
+
+
 <p>You should write the function declaration above the first use of
 the function.  You can put it in a header file and use the <code>#include</code>
 directive to include that function declaration in any source code files that
